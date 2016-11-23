@@ -1,0 +1,296 @@
+﻿@model WorkorderMobileMvc.ViewModel.WOPartViewModel
+
+@Scripts.Render("~/bundles/jqueryValidate")
+
+@Scripts.Render("~/bundles/Utils")
+<style>
+
+    #cost{
+        float:left;
+        padding-left:10px;
+        margin-top:15px;
+    }
+</style>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+
+        // populate the part drop down list based on selected location
+        $('#DDLLocation').change(function () {
+            populateList($('#DDLPart'), $('#hiddenURL').val() + "/GetParts?location=" + $('#DDLLocation').val());
+
+        });
+
+        $('#DDLPart').change(function () {
+
+            $.ajax({
+                url: $("#hiddenURL").val() + "/GetCost",
+                type: "POST",
+                data: { "part": $('#DDLPart').val() },
+                cache: false,
+                error: function (xhr, status, error) {
+                    alert(error);
+                },
+                success: function (data) {
+                    if (data.HasErrors) {
+                        alert(data.ErrorMessage);
+                        return;
+
+                    }
+
+                    // get values from the JsonResult and use to populate fields (visible/hidden) on page
+                    if (data.Value !== null) {
+                        $("#cost").html = ' ';
+                        $('#cost').empty();
+                        $("#cost").append(data.Value);
+                        $('#CostAverage').empty();
+                        $('#CostAverage').val(data.Value);
+                        $("#totalPrice").html = ' ';
+                        $('#totalPrice').empty();
+                        $("#totalPrice").append(($("#CostAverage").val() * $('#QuantityActual').val()));
+
+
+                    }
+
+
+                }
+            });
+
+        });
+        $('#QuantityActual').change(function () {
+
+           
+            if ($.isNumeric($('#QuantityActual').val())) {
+
+                if ($.isNumeric($('#newPrice').val())) {
+
+                    if ($('#newPrice').val() == '0' || $('#newPrice').val() == '0.0' || $('#newPrice').val() == '0.00') {
+                        $.ajax({
+                            url: $("#hiddenURL").val() + "/GetCost",
+                            type: "POST",
+                            data: { "part": $('#DDLPart').val() },
+                            cache: false,
+                            error: function (xhr, status, error) {
+                                alert(error);
+                            },
+                            success: function (data) {
+                                if (data.HasErrors) {
+                                    alert(data.ErrorMessage);
+                                    return;
+
+                                }
+
+                                // get values from the JsonResult and use to populate fields (visible/hidden) on page
+                                if (data.Value !== null) {
+                                    $("#cost").html = ' ';
+                                    $('#cost').empty();
+                                    $("#cost").append(data.Value);
+                                    $('#CostAverage').empty();
+                                    $('#CostAverage').val(data.Value);
+
+
+                                    $("#totalPrice").html = ' ';
+                                    $('#totalPrice').empty();
+                                    $("#totalPrice").append(($("#CostAverage").val() * $('#QuantityActual').val()));
+
+                                }
+
+
+                            }
+                        });
+                    }
+                    else
+                    {
+                        $('#CostAverage').empty();
+                        $('#CostAverage').val($('#newPrice').val());
+                        $("#totalPrice").html = ' ';
+                        $('#totalPrice').empty();
+                        $("#totalPrice").append(($("#QuantityActual").val() * $('#newPrice').val()));
+
+                    }
+                }
+                else {
+                    $("#totalPrice").html = ' ';
+                    $('#totalPrice').empty();
+                    $("#totalPrice").append(($("#CostAverage").val() * $('#QuantityActual').val()));
+                }
+            }
+            else {
+                alert("Allow only Numeric Value");
+            }
+            
+        });
+        
+
+        $('#newPrice').change(function () {
+
+
+            if ($.isNumeric($('#newPrice').val())) {
+               
+                $('#CostAverage').empty();
+                $('#CostAverage').val($('#newPrice').val());
+            }
+            else {
+                alert("Allow only Numeric Value");
+            }
+
+        });
+
+
+        
+        $('#ChangePrice').click(function () {
+
+            $.ajax({
+                url: $("#hiddenURL").val() + "/ChangePrice",
+                type: "POST",
+                data: { "part": $('#DDLPart').val(),  "price": $('#newPrice').val() },
+                cache: false,
+                error: function (xhr, status, error) {
+                    alert(error);
+                },
+                success: function (data) {
+                    if (data.HasErrors) {
+                        alert(data.ErrorMessage);
+                        return;
+
+                    }
+
+                    // get values from the JsonResult and use to populate fields (visible/hidden) on page
+                    if (data.Value !== null) {
+                        $("#cost").html = ' ';
+                        $('#cost').empty();
+                        $("#cost").append(data.Value);
+                        $('#CostAverage').empty();
+                        $('#CostAverage').val(data.Value);
+
+
+
+                    }
+
+
+                }
+            });
+
+
+            
+        });
+
+        // auto-save
+        var isDirty = false;
+
+        function setDirtyFlag() {
+            if (!isDirty) {
+                isDirty = true;
+            }
+        }
+
+        // detect whether or not form is dirty and set flag
+        $(':input').change(function () {
+            setDirtyFlag();
+        });
+
+
+
+        // end auto-save
+
+        // suppress form submit when enter key is pressed
+        // instead, unless a hyperlink has focus, move the focus to the "Back" link
+        // if a link has focus, let the link be followed and any logic run
+        $('form').bind('keypress', function (e) {
+            if (e.keyCode == 13) {
+                if ($('a').is(':focus')) {
+                    return true;
+                } else {
+                    $('#backLink').focus();
+                    return false;
+                }
+            }
+        });
+    });
+</script>
+
+
+
+@{
+    ViewBag.Title = "Create Part";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<p>
+    <strong>Create Part</strong>&nbsp;
+    @Html.ActionLink("Home", "Index", "WorkOrder")&nbsp;
+    @Html.ActionLink("Back", "Edit", "WorkOrder", new { id = Model.WOnumber }, new { id = "backLink" })&nbsp;
+    <a href="@Url.Content(" ~ />Content/Help.htm")" target="_blank" id="helpLink">Help</a>
+</p>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+    @Html.HiddenFor(model => model.ID)
+    @Html.HiddenFor(model => model.WO)
+    @Html.HiddenFor(model => model.WOnumber)
+     @Html.HiddenFor(model => model.CostAverage)
+    
+    <fieldset>
+        @Html.Hidden("hiddenURL", Url.Action("", "part"))
+
+
+
+
+        <div class="editor-label-dll">
+            @Html.LabelFor(model => model.Location)
+        </div>
+        <div class="editor-field">
+            @Html.DropDownListFor(x => x.Location, new SelectList(Model.Locations, "Location", "Location", Model.Locations), "---Select Location---", new { Class = "ddl", id = "DDLLocation" })
+
+
+            @Html.ValidationMessageFor(model => model.Location)
+        </div>
+
+
+        <div class="editor-label-dll">
+            @Html.LabelFor(model => model.Part)
+        </div>
+        <div class="editor-field">
+            @Html.DropDownListFor(model => model.Part, new SelectList(new string[] { }, Model.Parts), "---Select Parts---", new { @class = "ddl", id = "DDLPart" })
+            @Html.ValidationMessageFor(model => model.Part)
+        </div>
+        <div class="editor-label" style="padding-top:10px;">
+            @Html.LabelFor(model => model.CostAverage)
+        </div>
+        <div class="editor-field">
+                <div id="cost">00.00</div>
+           
+            
+            <div class="editor-field">
+                @Html.TextBoxFor(model => model.CostAverage, new { id="newPrice"})
+                <a href="#" id="ChangePrice">Change price</a>
+                
+            </div>
+            </div>
+        <div style="clear:left"></div>
+        <div class="editor-label-dll">
+            @Html.LabelFor(model => model.QuantityActual)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.QuantityActual)
+            @Html.ValidationMessageFor(model => model.QuantityActual)
+        </div>
+        <div class="editor-label">
+
+            Total Price
+
+        </div>
+        <div class="editor-field" id="totalPrice">
+            00.00
+        </div>
+
+        <div style="clear:left"></div>
+        <p>
+            <input type="submit" value="Save" />
+        </p>
+    </fieldset>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

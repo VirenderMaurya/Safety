@@ -1,0 +1,140 @@
+﻿@model WorkorderMobileMvc.ViewModel.WorkOrderCreateViewModel
+
+@Scripts.Render("~/bundles/jqueryValidate")
+
+<script type="text/javascript" src="~/Scripts/Utils.js"></script>
+<script type="text/javascript">
+    $(function () {
+        var hiddenURL = $("#hiddenURL").val();
+        $("#ddlProperty").change(function () {
+            // get the building list
+           
+            $.ajaxSetup({ cache: false });
+            $.getJSON(hiddenURL + "/GetBuildings?property=" + $('#ddlProperty').val(), null, function (data) {
+                clearList($('#ddlBuilding'));
+                if (data.HasErrors) {
+                    alert(data.ErrorMessage);
+                    return;
+                }
+                addItems($('#ddlBuilding'), data.Items);
+            });
+
+            getAssetList();
+        });
+
+        $("#ddlBuilding").change(function () {
+            getAssetList();
+        });
+
+        $("#ddlAssetGroup").change(function () {
+            getAssetList();
+        });
+
+        function getAssetList() {
+            
+            $.ajaxSetup({ cache: false });
+            $.getJSON(hiddenURL +
+            "/GetAssets?property=" + $("#ddlProperty").val() +
+            "&assetGroup=" + ($('#ddlAssetGroup').val() == null ? "" : $('#ddlAssetGroup').val()) +
+            "&building=" + ($('#ddlBuilding').val() == null ? "" : $('#ddlBuilding').val()), null, function (data) {
+
+                clearList($('#ddlAsset'));
+                if (data.HasErrors) {
+                    alert(data.ErrorMessage);
+                    return;
+                }
+                addItems($('#ddlAsset'), data.Items)
+            });
+        }
+
+        function clearList(dropDownList) {
+            // first make sure list is clear
+            dropDownList.empty();
+            // then append an empty string
+            dropDownList.append("<option value =''></option>");
+        }
+
+        function addItems(dropDownList, data) {
+            // loop through each member and populate the combo box
+            $.each(data, function (index, optionData) {
+                dropDownList.append("<option value='" + optionData + "'>" + optionData + "</option>");
+            });
+        }
+
+    });
+</script>
+@Html.Hidden("hiddenURL", Url.Action("", "WorkOrder"))
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@using (Html.BeginForm()) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <fieldset>
+        <p>
+            <strong>New WO</strong>&nbsp;
+            @Html.ActionLink("Home", "Index")&nbsp;
+            <a href="@Url.Content(" ~ />Content/Help.htm")" target="_blank">Help</a>
+        </p>
+
+        <div class="editor-label-dll">
+            @Html.LabelFor(model => model.ServiceLists)
+        </div>
+        <div class="editor-field">
+            @if (Model.ServiceIsLimitToList)
+            { 
+
+            @Html.TextAreaFor(model => model.Service, new { @class = "txt", id = "Service" })
+             }
+            else
+            { 
+             @Html.DropDownListFor(x => x.Service, new SelectList(Model.ServiceLists, "Services", "Services", Model.Service), "---Select Service---", new { Class = "field size3", id = "ddlService" })
+             @Html.ValidationMessageFor(model => model.Service)
+            } 
+          
+        </div>
+
+        <div class="editor-label-dll">
+            @Html.LabelFor(model => model.Property)
+        </div>
+        <div class="editor-field">
+            @Html.DropDownListFor(x => x.Property, new SelectList(Model.Properties, "Propertie", "Propertie", Model.Property), "---Select Property---", new { Class = "field size3", id = "ddlProperty" })
+            @Html.ValidationMessageFor(model => model.Property)
+        </div>
+       
+        <div class="editor-label-dll">
+            @Html.LabelFor(model => model.Building)
+        </div>
+        <div class="editor-field">
+            @Html.DropDownListFor(model => model.Building, new SelectList(new string[] { }, Model.Property), "---Select Building---", new { @class = "ddl", id = "ddlBuilding" })
+            @Html.ValidationMessageFor(model => model.Building)
+        </div>
+
+
+        <div class="editor-label-dll">
+            @Html.LabelFor(model => model.Asset)
+        </div>
+        <div class="editor-field">
+            @Html.DropDownListFor(model => model.Asset, new SelectList(new string[] { }, Model.Asset), "---Select Asset---", new { @class = "ddl", id = "ddlAsset" })
+            @Html.ValidationMessageFor(model => model.Asset)
+        </div>
+
+       
+        <div style="clear:left"></div>
+        <p>
+            <input type="submit" value="Create" />
+        </p>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

@@ -1,0 +1,52 @@
+﻿@model List< WorkorderMobileMvc.ViewModel.WOSafetyViewModel>
+@{
+
+    var grid = new WebGrid(source: Model,
+                                           defaultSort: "SafetyName",
+                                           rowsPerPage: 20, fieldNamePrefix: "wg_",
+                                           canPage: true, canSort: true,
+                                           pageFieldName: "pg", sortFieldName: "srt"
+                                           );
+}
+
+
+<table cellpadding="0" cellspacing="0" width="100%" id="tblWOSafety">
+
+   
+    <tr>
+        <td>
+            @grid.GetHtml(tableStyle: "listing-border", headerStyle: "gridhead", footerStyle: "paging", rowStyle: "td-dark", alternatingRowStyle: "td-light", 
+             mode: WebGridPagerModes.All,
+                        columns:
+                          grid.Columns(
+          grid.Column("ID", format: @<text>  <span class="display-safty">@item.ID </span> <label id="lblID" class="edit-safty">@item.ID</label> </text>, style: "col1Width" ),
+          grid.Column("WO", format: @<text>  <span class="display-safty">@item.WO </span> <label id="lblWO" class="edit-safty">@item.WO</label> </text>, style: "col1Width" ),
+          grid.Column("GroupName", format: @<text>  <span class="display-safty">@item.GroupName </span> <label id="lblSafetyGroup" class="edit-safty">@item.GroupName</label> </text>, style: "col1Width" ),
+          grid.Column("SafetyName", format: @<text>  <span class="display-safty">@item.SafetyName </span> <label id="lblSafetyName" class="edit-safty">@item.SafetyName</label> </text>, style: "col1Width" ),
+          grid.Column("Answer", "Answer", format: @<text>  <span class="display-safty"> <label id="lblAnswer">@( item.Answer == 1 ? "Yes" : item.Answer == 2 ? "" : "No")</label> </span>
+        @*<select id="selectAnswer" class="edit-safty"><option value="True">Yes</option><option value="False">No</option> </select>*@
+
+        <input type="checkbox" id="chkAnswer" value="@item.Answer" class="edit-safty" />
+        <label id="lblchkAnswerComments" class="edit-safty" style=" padding-left: 45px;"> Check the Box to select Yes </label>
+        </text> , style: "col2Width"), grid.Column("Comment", "Comment", format: @<text>
+                <span class="display-safty"> <label id="lblComment">@item.Comment</label> </span>    <input type="text" id="txtComment" value="@item.Comment" class="edit-safty" /> </text>, style: "col2Width"),
+          grid.Column("Action", format: @<text>
+                <div style="cursor:pointer;" class="edit-saftys display-safty"> @( item.ID == 0 ? "Add" : "Edit")</div>
+
+                <div style="cursor:pointer;" class="save-safty edit-safty">Save</div>
+                <div style="cursor:pointer;" class="cancel-safty edit-safty">Cancel</div>
+        </text>, style: "col3Width", canSort: false)
+                          ))
+
+
+
+
+
+
+        </td>
+    </tr>
+</table>
+
+
+
+

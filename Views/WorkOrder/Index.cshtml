@@ -1,0 +1,176 @@
+﻿@model WorkorderMobileMvc.ViewModel.WorkOrdersViewModel
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table>
+    <tr>
+        <th></th>
+    </tr>
+
+
+
+
+    @*@foreach (var item in Model.WorkOrders) {
+            <tr>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                    @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                    @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                </td>
+            </tr>
+        }*@
+
+</table>
+
+<div id="tabs-detailed">
+    <table class="stripeMe">
+       
+        <thead>
+            <tr style="background-color: #0074BA; color: #FFFFFF;">
+
+                @{
+                var user = (WorkorderMobileMvc.Models.MobileWebUser)Session["MobileWebUser"];
+                if (user.Filter == WorkorderMobileMvc.Models.MobileWebUser.AssignmentFilter.All ||
+                user.Filter == WorkorderMobileMvc.Models.MobileWebUser.AssignmentFilter.AssignedAndUnassigned)
+                {
+
+                <th>
+                    <strong>
+                        @Html.ActionLink("A", "Index", null, null, null, "tabs-detailed", new { id = Model.WorkOrders.PageIndex, sortColumn = "Assigned", sortOrder = Model.WorkOrders.NextSortOrder }, new { style = "color: #ffffff;" })
+                    </strong>
+                </th>
+                 }
+                 }
+                <th>
+                    <strong>
+                        @Html.ActionLink("WO", "Index", null, null, null, "tabs-detailed", new { id = Model.WorkOrders.PageIndex, sortColumn = "WOnumber", sortOrder = Model.WorkOrders.NextSortOrder }, new { style = "color: #ffffff;" })
+                    </strong>
+                </th>
+                <th>
+                    <strong>
+                        @Html.ActionLink("Requested", "Index", new { id = Model.WorkOrders.PageIndex, sortColumn = "RequestedBy", sortOrder = Model.WorkOrders.NextSortOrder }, new { style = "color: #ffffff;" })
+                    </strong>
+                </th>
+                <th>
+                    <strong>
+                        @Html.ActionLink("Phone", "Index", new { id = Model.WorkOrders.PageIndex, sortColumn = "RequesterPhone", sortOrder = Model.WorkOrders.NextSortOrder }, new { style = "color: #ffffff;" })
+                    </strong>
+                </th>
+                <th>
+                    <strong>
+                        @Html.ActionLink("Service", "Index", null, null, null, "tabs-detailed", new { id = Model.WorkOrders.PageIndex, sortColumn = "Service", sortOrder = Model.WorkOrders.NextSortOrder }, new { style = "color: #ffffff;" })
+                    </strong>
+                </th>
+                <th>
+                    <strong>
+                        @Html.ActionLink("Property", "Index", null, null, null, "tabs-detailed", new { id = Model.WorkOrders.PageIndex, sortColumn = "Property", sortOrder = Model.WorkOrders.NextSortOrder }, new { style = "color: #ffffff;" })
+                    </strong>
+                </th>
+
+                <th>
+                    <strong>
+                        @Html.ActionLink("Building", "Index", null, null, null, "tabs-detailed", new { id = Model.WorkOrders.PageIndex, sortColumn = "Building", sortOrder = Model.WorkOrders.NextSortOrder }, new { style = "color: #ffffff;" })
+                    </strong>
+                </th>
+                <th>
+                    <strong>
+                        @Html.ActionLink("Asset", "Index", null, null, null, "tabs-detailed", new { id = Model.WorkOrders.PageIndex, sortColumn = "Asset", sortOrder = Model.WorkOrders.NextSortOrder }, new { style = "color: #ffffff;" })
+                    </strong>
+                </th>
+                <th>
+                    <strong>
+                        @Html.ActionLink("Status", "Index", null, null, null, "tabs-detailed", new { id = Model.WorkOrders.PageIndex, sortColumn = "Status", sortOrder = Model.WorkOrders.NextSortOrder }, new { style = "color: #ffffff;" })
+                    </strong>
+                </th>
+                <th>
+                    <strong>
+                        @Html.ActionLink("Due", "Index", null, null, null, "tabs-detailed", new { id = Model.WorkOrders.PageIndex, sortColumn = "Due", sortOrder = Model.WorkOrders.NextSortOrder }, new { style = "color: #ffffff;" })
+                    </strong>
+                </th>
+                <th>
+                    <strong>
+                        @Html.ActionLink("Priority", "Index", null, null, null, "tabs-detailed", new { id = Model.WorkOrders.PageIndex, sortColumn = "Priority", sortOrder = Model.WorkOrders.NextSortOrder }, new { style = "color: #ffffff;" })
+                    </strong>
+                </th>
+                <th>
+                    <strong>
+                        @Html.ActionLink("Shop", "Index", null, null, null, "tabs-detailed", new { id = Model.WorkOrders.PageIndex, sortColumn = "Shop", sortOrder = Model.WorkOrders.NextSortOrder }, new { style = "color: #ffffff;" })
+                    </strong>
+                </th>
+            </tr>
+        </thead>
+                    @foreach (var item in Model.WorkOrders)
+                    {
+
+                        <tr>
+
+                            @if (user.Filter == WorkorderMobileMvc.Models.MobileWebUser.AssignmentFilter.All ||
+                                user.Filter == WorkorderMobileMvc.Models.MobileWebUser.AssignmentFilter.AssignedAndUnassigned)
+                            {
+
+                                <td>
+                                    @Html.Encode(item.Assigned)
+                                </td>
+                            }
+                            <td>
+                                @Html.ActionLink(item.WOnumber.ToString(), "Edit", new { id = item.WOnumber })
+                            </td>
+
+                            <td>
+                                @Html.Encode(item.RequestedBy)
+                            </td>
+                            <td>
+                                @Html.Encode(item.RequesterPhone)
+                            </td>
+                            <td>
+                                @Html.Encode(item.Service)
+                            </td>
+                            <td>
+                                @Html.Encode(item.Property)
+                            </td>
+                            <td>
+                                @Html.Encode(item.Building)
+                            </td>
+                            <td>
+                                @Html.Encode(item.Asset)
+                            </td>
+                            <td>
+                                @Html.Encode(item.Status)
+                            </td>
+                            <td>
+                                @Html.Encode(item.Due.ToShortDateString())
+                            </td>
+                            <td>
+                                @Html.Encode(item.Priority)
+                            </td>
+                            <td>
+                                @Html.Encode(item.Shop)
+                            </td>
+                        </tr>
+                    }
+                
+            </table>
+            <p>
+                Page @Model.WorkOrders.PageIndex  of @Model.WorkOrders.TotalPages &nbsp; &nbsp;
+                    @{ if (Model.WorkOrders.ShowFirst)  {
+                     @Html.ActionLink("<<< First", "Index", null, null, null, "tabs-detailed", new { id = 1, sortColumn = Model.WorkOrders.SortColumn, sortOrder = Model.WorkOrders.SortOrder }, null) @:&nbsp;
+                    }
+                    if (Model.WorkOrders.ShowPrevious) { 
+                     @Html.ActionLink("<< Previous", "Index", null, null, null, "tabs-detailed", new { id = (Model.WorkOrders.PageIndex - 1), sortColumn = Model.WorkOrders.SortColumn, sortOrder = Model.WorkOrders.SortOrder }, null) @:&nbsp;
+                    }
+                    if (Model.WorkOrders.ShowNext) {  
+                    @Html.ActionLink("Next >>", "Index", null, null, null, "tabs-detailed", new { id = (Model.WorkOrders.PageIndex + 1), sortColumn = Model.WorkOrders.SortColumn, sortOrder = Model.WorkOrders.SortOrder }, null) @:&nbsp;
+                    }
+                    if (Model.WorkOrders.ShowLast)  { 
+                    @Html.ActionLink("Last >>>", "Index", null, null, null, "tabs-detailed", new { id = Model.WorkOrders.TotalPages, sortColumn = Model.WorkOrders.SortColumn, sortOrder = Model.WorkOrders.SortOrder }, null)
+                     }
+                    } 
+            </p>
+        </div>

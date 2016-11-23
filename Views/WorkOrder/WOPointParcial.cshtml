@@ -1,0 +1,46 @@
+﻿@model List<WorkorderMobileMvc.ViewModel.WOPointViewModel>
+
+@{
+
+    var grid = new WebGrid(source: Model,
+                                           defaultSort: "point",
+                                           rowsPerPage: 20, fieldNamePrefix: "wg_",
+                                           canPage: true, canSort: true,
+                                           pageFieldName: "pg", sortFieldName: "srt"
+                                           );
+}
+
+
+<table cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td>
+            @grid.GetHtml(tableStyle: "listing-border", headerStyle: "gridhead", footerStyle: "paging", rowStyle: "td-dark", alternatingRowStyle: "td-light",
+             mode: WebGridPagerModes.All,
+                        columns:
+                          grid.Columns(
+           grid.Column("ID", format: @<text>  <span  class="display-mode">@item.ID </span> <label id="lblID" class="edit-mode">@item.ID</label> </text>, style: "col1Width" ),
+          grid.Column("Point", format: @<text>  <span class="display-mode">@item.point </span> <label id="lblpoint" class="edit-mode">@item.point</label> </text>, style: "col1Width" ),
+          grid.Column("Fail", "Fail", format: @<text>  <span class="display-mode"> <label id="lblFail">@item.fail</label> </span> <input type="checkbox" id="chkFail" value="@item.fail" class="edit-mode" /></text>, style: "col2Width"),
+
+          grid.Column("Visited", "Visited", format: @<text> <span class="display-mode"> <label id="lblvisited">@item.visited</label> </span>    <input type="date" id="txtvisited" value="@item.visited" class="edit-mode" /> </text>, style: "col2Width"),
+          grid.Column("Action", format: @<text>
+            <div style="cursor:pointer;" class="edit-user display-mode">Edit</div>
+            <div style="cursor:pointer;"  class="save-user edit-mode">Save</div>
+            <div style="cursor:pointer;"  class="cancel-user edit-mode">Cancel</div>
+        </text>, style: "col3Width", canSort: false)
+       ))
+        
+        
+       
+
+
+        
+        </td>
+    </tr>
+</table>
+
+
+
+
+
+

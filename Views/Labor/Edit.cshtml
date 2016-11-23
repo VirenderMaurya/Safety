@@ -1,0 +1,110 @@
+﻿@model WorkorderMobileMvc.ViewModel.WOLaborViewModel
+<link href="~/Content/jquery-ui-1.8.11.custom.css" rel="stylesheet" type="text/css" />
+
+
+@Scripts.Render("~/bundles/jqueryValidate")
+
+@Scripts.Render("~/bundles/Utils")
+<script src="~/Scripts/jquery-ui-1.8.11.custom.min.js"></script>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+       $('#DateWork').datepicker();
+
+
+        var isDirty = false;
+        function setDirtyFlag() {
+            if (!isDirty) {
+                isDirty = true;
+            }
+        }
+
+        // detect whether or not form is dirty and set flag
+        $(':input').change(function () {
+            setDirtyFlag();
+        });
+
+        $('form').bind('keypress', function (e) {
+            if (e.keyCode == 13) {
+                if ($('a').is(':focus')) {
+                    return true;
+                } else {
+                    $('#backLink').focus();
+                    return false;
+                }
+            }
+        });
+    });
+</script>
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+@using (Html.BeginForm()) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+   
+    <fieldset>
+        @Html.HiddenFor(model => model.WOnumber) 
+        @Html.HiddenFor(model => model.ID) 
+        @Html.HiddenFor(model => model.WO) 
+        @Html.HiddenFor(model => model.WOShop) 
+        @Html.HiddenFor(model => model.WOSubShop) 
+        <p>
+            <strong>Edit Labor</strong>&nbsp;
+            @Html.ActionLink("Back", "Edit", "WorkOrder", new { id = Model.WOnumber }, new { id = "backLink" })&nbsp;
+          
+            <a href="@Url.Content(" ~ />Content/Help.htm")" target="_blank" id="helpLink" >Help</a>
+        </p>
+        <div class="editor-label-dll">
+            @Html.LabelFor(model => model.Labor)
+        </div>
+        <div class="editor-field">
+            @Html.DropDownListFor(x => x.Labor, new SelectList(Model.Labors, "Labor", "Labor", Model.Labor), "---Select Labor---", new { Class = "ddl", id = "ddlService" })
+            @Html.ValidationMessageFor(model => model.Labor)
+        </div>
+
+        <div class="editor-label-dll">
+            @Html.LabelFor(model => model.HoursRegular)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.HoursRegular, new { @class = "txt" })
+            @Html.ValidationMessageFor(model => model.HoursRegular)
+        </div>
+        <div class="editor-label-dll">
+            @Html.LabelFor(model => model.DateWork)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.DateWork, new { @class = "txt", id = "DateWork" })
+            @Html.ValidationMessageFor(model => model.DateWork)
+        </div>
+
+        <div class="editor-label-dll">
+            @Html.LabelFor(model => model.Comments)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.Comments, new { @class = "txt", id = "Comments" })
+            @Html.ValidationMessageFor(model => model.Comments)
+        </div>
+
+
+
+        <div style="clear:left"></div>
+        <p>
+            <input type="submit" value="Save" />
+                </p>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

@@ -1,0 +1,820 @@
+﻿@model WorkorderMobileMvc.ViewModel.WorkOrderViewModel
+
+
+@Scripts.Render("~/bundles/jqueryValidate")
+
+<script type="text/javascript" src="~/Scripts/Utils.js"></script>
+<script type="text/javascript" src="~/ckeditor/ckeditor.js"></script>
+
+<script type="text/javascript" src="~/ckeditor/adapters/jquery.js"></script>
+<style>
+    .listing-border {
+        background: #194B7E;
+        width: 100%;
+    }
+
+    .gridhead {
+        background: #194B7E;
+        font: bold 13px Arial, Helvetica, sans-serif;
+        color: #ffffff;
+        text-decoration: none;
+        height: 27px;
+        text-align: left;
+    }
+
+        .gridhead ui-link {
+            background: #194B7E;
+            font: bold 13px Arial, Helvetica, sans-serif;
+            color: #ffffff;
+            text-decoration: none;
+            height: 27px;
+            text-align: left;
+        }
+
+        .gridhead th a {
+            text-decoration: none;
+            color: #000000;
+        }
+
+            .gridhead th a:hover {
+                text-decoration: underline;
+                color: #FF0000;
+            }
+
+    .td-dark {
+        background: #ffffff;
+        height: 20px;
+    }
+
+    .td-light {
+        background: #FFE2BF;
+        height: 20px;
+    }
+
+    .paging {
+        background: #194B7E;
+        text-align: right;
+        color: #000000;
+    }
+
+        .paging span {
+            font: bold 12px Arial, Helvetica, sans-serif;
+            color: #FFFFFF;
+            margin-right: 3px;
+            padding: 1px 3px 1px 3px;
+        }
+
+        .paging a {
+            font: bold 12px Arial, Helvetica, sans-serif;
+            color: #000000;
+            text-decoration: none;
+            margin-right: 3px;
+            border: 1px solid #ffffff;
+            background: #194B7E;
+            padding: 1px 3px 1px 3px;
+        }
+
+            .paging a:hover {
+                font: bold 12px Arial, Helvetica, sans-serif;
+                color: #000000;
+                text-decoration: none;
+                border: 1px solid #ffffff;
+                background: #ffffff;
+            }
+
+    .colFirstName {
+        width: 15%;
+        text-align: left;
+    }
+
+    .colLastName {
+        width: 25%;
+        text-align: left;
+    }
+
+    .colPhone {
+        width: 10%;
+        text-align: left;
+    }
+
+    .colContactType {
+        width: 40%;
+        text-align: left;
+    }
+
+    .ColeditDelete {
+        width: 10%;
+        text-align: left;
+    }
+</style>
+<script type="text/javascript">
+
+
+    $(function () {
+        $("#ddlService").change(function () {
+
+            if ($('#Service').val() != $('#ddlService').val()) {
+                // Show the confirmation dialog
+                var result = confirm("Want to Change service?");
+
+                if (result == true) {
+                    $.ajax({
+                        url: $("#hiddenURL").val() + "/GetService",
+                        type: "GET",
+                        data: { 'service': $('#ddlService').val() },
+                        cache: false,
+                        error: function (xhr, status, error) {
+                            alert(error);
+                        },
+                        success: function (data) {
+                            if (data.HasErrors) {
+                                alert(data.ErrorMessage);
+                                return;
+
+                            }
+
+                            // get values from the JsonResult and use to populate fields (visible/hidden) on page
+                            if (data.Value !== null) {
+
+                                $('#Service').val(data.Value.Service);
+                                $('#Priority').val(data.Value.Priority);
+                                $('#EstimatedTime').val(data.Value.StandardTime);
+
+                                var date = new Date($('#Created').val());
+                                date.setDate(date.getDate() + data.Value.DueDateAdvance);
+                                date = getFormattedDate(date);
+                                $('#Due').val(date);
+
+                                if (data.Value.Shop !== null) {
+                                    $('#Shop').val(data.Value.Shop);
+
+                                    if (data.Value.ShopSub !== null)
+                                        $('#ShopSub').val(data.Value.ShopSub);
+
+                                    if (data.Value.ShopSupervisor !== null)
+                                        $('#Supervisor').val(data.Value.ShopSupervisor);
+                                }
+
+                                //if (data.Value.Description !== null) {
+                                //    $('#DescriptionToAppend').val(data.Value.Description);
+                                //}
+
+                                // call ChangeService
+
+                                var origDesc = $('#Description').text();
+                                var descToAppend = '';
+                                if (data.Value.Description !== null && data.Value.Description !== '' && data.Value.Description !== 'null')
+                                    descToAppend = data.Value.Description;
+
+                                $.ajax({
+                                    type: "POST",
+
+                                    url: $('#hiddenURL').val() + "/ChangeService",
+                                    //data: $('form').serializeArray(),
+
+                                    data: { "woNumber": $('#WOnumber').val(), "service": $('#ddlService').val() },
+
+                                    dataType: "json",
+                                    cache: false,
+                                    error: function (xhr, status, error) {
+                                        alert(error + xhr.status + " " + xhr.statusText);
+                                    },
+                                    success: function (data) {
+                                        if (data.HasErrors) {
+                                            alert(data.ErrorMessage);
+                                            return;
+                                        }
+                                        $('#DescriptionToAppend').empty();
+                                        $('#Description').empty();
+                                        $('#Description').append('<pre>' + origDesc + descToAppend + '<pre/>');
+                                        //CKEDITOR.instances['#Description'].updateElement('<pre>' + origDesc + descToAppend + '<pre/>');
+                                        //CKEDITOR.instances['Description'].setData('<pre>' + origDesc + descToAppend + '<pre/>')
+                                        $('#Service').val($('#ddlService').val());
+
+                                    }
+                                });
+                            }
+
+                        }
+                    });
+                }
+                else {
+                    $('#ddlService').val($('#Service').val());
+
+                }
+
+                // Always cancel the default action of the link
+                return false;
+            }
+        });
+
+        $("#ddlStatus").change(function () {
+            //var result = confirm("Want to Change  Work Order Status?");
+            var result = true;
+            if (result == true) {
+                if ($('#ddlStatus').val() === 'Completed') {
+                    if (!confirm('Once a work order is set to "Completed" it can no longer be edited in MicroMain Mobile.  Continue?')) {
+                        //$('#Status').val(theStatus);
+                        $('#ddlStatus').val($('#Status').val());
+                        return;
+                    }
+                }
+                $('#Status').val($('#ddlStatus').val());
+                $.ajax({
+                    type: "POST",
+                    url: $("#hiddenURL").val() + "/ChangeStatus",
+                    data: { "woNumber": $('#WOnumber').val(), "newStatus": $('#ddlStatus').val() },
+                    dataType: "json",
+                    cache: false,
+                    async: false,
+                    error: function (xhr, status, error) {
+                        $('#ddlStatus').val($('#Status').val());
+                        alert(error);
+                    },
+                    success: function (data) {
+                        if (data.HasErrors) {
+                            alert(data.ErrorMessage);
+                            return;
+                            $('#Status').val($('#ddlStatus').val());
+                        }
+
+                        $('#statusLabel').empty();
+                        $('#statusLabel').append($('#ddlStatus').val());
+                        $('#statusLabel').val($('#ddlStatus').val());
+
+                        if ($('#statusLabel').val() === 'Completed')
+                            $('form').submit();
+
+                        $('#statusDialog').dialog('close');
+                    }
+                });
+
+            }
+            else {
+
+                $('#ddlStatus').val($('#Status').val());
+            }
+        });
+
+
+
+        // handle click of the description append button
+        $('#btnDescription').click(function () {
+
+            var result = confirm("Want to Update  Work Order Discription?");
+
+            if (result == true) {
+
+
+                $.ajax({
+                    url: $("#hiddenURL").val() + "/AppendDescription",
+                    type: "POST",
+                    data: { "woNumber": $('#WOnumber').val(), "text": CKEDITOR.instances['DescriptionToAppend'].getData().replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;") },
+                    cache: false,
+                    error: function (xhr, status, error) {
+                        alert(error);
+                    },
+                    success: function (data) {
+                        if (data.HasErrors) {
+                            alert(data.ErrorMessage);
+                            return;
+                        }
+                        $('#DescriptionToAppend').empty();
+                        $('#Description').empty();
+                        $('#Description').append(data.Value);
+                        CKEDITOR.instances['DescriptionToAppend'].updateElement();
+                        CKEDITOR.instances['DescriptionToAppend'].setData('');
+                    }
+                });
+            }
+
+        });
+
+
+        $('#btnComment').click(function () {
+
+
+
+            var result = confirm("Want to Update Comments?");
+
+            if (result == true) {
+                $.ajax({
+                    url: $("#hiddenURL").val() + "/AppendComment",
+                    type: "POST",
+                    data: { "woNumber": $('#WOnumber').val(), "text": CKEDITOR.instances['SpecialInstruction'].getData().replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;") },
+                    cache: false,
+                    error: function (xhr, status, error) {
+                        alert(error);
+                    },
+                    success: function (data) {
+                        if (data.HasErrors) {
+                            alert(data.ErrorMessage);
+                            return;
+                        }
+
+                        $('#SpecialInstruction').append(data.Value);
+
+                        //CKEDITOR.instances.editor1.setData(
+                    }
+                });
+            }
+        });
+
+    });
+
+
+    //function CKupdate() {
+
+    //    for (instance in CKEDITOR.instances) {
+    //        alert(instance);
+    //        CKEDITOR.instances[instance].updateElement();
+    //        CKEDITOR.instances[instance].setData('');
+    //    }
+    //}
+</script>
+
+
+<style type="text/css">
+    .edit-mode {
+    }
+
+    .edit-user {
+    }
+
+        .edit-user display-mode {
+        }
+
+    .save-user edit-mode {
+    }
+
+    .display-mode {
+    }
+
+    .cancel-user {
+    }
+
+    .webgrid-table {
+        font-family: Arial,Helvetica,sans-serif;
+        font-size: 14px;
+        font-weight: normal;
+        width: 650px;
+        display: table;
+        border-collapse: collapse;
+        border: solid px #C5C5C5;
+        background-color: white;
+    }
+
+        .webgrid-table td, th {
+            border: 1px solid #C5C5C5;
+            padding: 3px 7px 2px;
+        }
+
+    .webgrid-header, .webgrid-header a {
+        background-color: #E3E3E3;
+        color: black;
+        text-align: left;
+        text-decoration: none;
+    }
+
+    .webgrid-footer {
+    }
+
+    .webgrid-row-style {
+        padding: 3px 7px 2px;
+    }
+
+    .webgrid-alternating-row {
+        background-color: #F5F5F5;
+        padding: 3px 7px 2px;
+    }
+
+    .col1Width {
+        width: 50px;
+    }
+
+    .col2Width {
+        width: 200px;
+    }
+
+    .col3Width {
+        width: 200px;
+    }
+</style>
+
+<script src="http://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+
+<script type="text/javascript">
+    
+
+    $(function () {
+        $('.edit-mode').hide();
+        $('.edit-user, .cancel-user').on('click', function () {
+           
+            var tr = $(this).parents('tr:first');
+            tr.find('.edit-mode, .display-mode').toggle();
+
+            tr.find("#txtvisited").datepicker();
+        });
+
+        $('.save-user').on('click', function () {
+            var tr = $(this).parents('tr:first');
+            var faild = tr.find("#chkFail").prop('checked');
+            var visited = tr.find("#txtvisited").val();
+            var ID = tr.find("#lblID").html();
+            
+            tr.find("#lblFail").text(faild);
+            tr.find("#lblvisited").text(visited);
+            tr.find('.edit-mode, .display-mode').toggle();
+            var UserModel =
+            {
+                "ID": ID,
+                "Fail": faild,
+                "Visited": visited
+            };
+            $.ajax({
+                url: $("#hiddenURL").val() + "/updatePoints",
+                data: { "ID": ID, "visited": visited, "failed": faild },
+                type: 'POST',
+                cache: false,
+              
+                success: function (data) {
+                  
+                }
+            });
+
+        });
+    })
+</script>
+
+
+
+<style type="text/css">
+    .edit-safty {
+    }
+
+    .edit-saftys {
+    }
+
+    .edit-safty display-safty {
+    }
+
+    .save-safty edit-safty {
+    }
+
+    .display-safty {
+    }
+
+    .cancel-safty {
+    }
+
+    .falsetr
+    {
+        background-color:red;
+    }
+
+   
+
+
+
+ </style>
+<script type="text/javascript">
+   
+
+    $(function () {
+       
+        $(".listing-border  tr td:nth-child(3)").hide();
+        $(".listing-border  tr th:nth-child(3)").hide();
+        $('.listing-border   tr').each(function () {
+          
+            var tr = $(this);
+            
+           
+
+
+            if (tr.find("#lblAnswer").html() == "No") {
+                tr.addClass("falsetr");
+            }
+
+        });
+
+
+
+        $('.edit-safty').hide();
+        $('.edit-saftys, .cancel-safty').on('click', function () {
+
+            var tr = $(this).parents('tr:first');
+            tr.find('.edit-safty, .display-safty').toggle();
+
+
+        });
+
+        $('.save-safty').on('click', function () {
+           
+            var tr = $(this).parents('tr:first');
+            var answer = tr.find("#chkAnswer").prop('checked');
+            var comment = tr.find("#txtComment").val();
+            var ID = tr.find("#lblID").html();
+            var WO = tr.find("#lblWO").html();
+            var groupName = tr.find("#lblSafetyGroup").html();
+            var safetyName = tr.find("#lblSafetyName").html();
+         
+            tr.find('.edit-safty, .display-safty').toggle();
+            var UserModel =
+            {
+                "ID": ID,
+                "WO": WO,
+                "GroupName":groupName,
+                "SafetyName":safetyName,
+                "Answer": answer,
+                "Comment": comment
+            };
+            $.ajax({
+                url: $("#hiddenURL").val() + "/updateWOSaftey",
+                data: { "ID": ID, "WO": WO, "GroupName" :groupName,"SafetyName":safetyName, "Answer": answer, "Comment": comment },
+                type: 'POST',
+                cache: false,
+                error: function (xhr, status, error) {
+                    alert(error);
+                },
+                success: function (data) {
+                    
+                    //if (answer == false)
+                    //{
+                    //    tr.addClass("falsetr");
+
+                    //}
+                    if (ID = "0") {
+                        //tr.find("#lblID").val(data.Value);
+                        location.reload();
+
+                    }
+                    else {
+                        tr.find("#lblAnswer").text(answer == true ? "Yes" : item.Answer == false ? "" : "No");
+                        tr.find("#lblComment").text(comment);
+                    }
+                  
+                }
+            });
+
+        });
+    })
+</script><div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <fieldset>
+        @Html.Hidden("hiddenURL", Url.Action("", "WorkOrder"))
+        @Html.HiddenFor(model => model.WOnumber)
+        @Html.HiddenFor(model => model.Property)
+        @Html.HiddenFor(model => model.Asset)
+        @Html.HiddenFor(model => model.Status)
+        @Html.HiddenFor(model => model.EstimatedTime)
+        @Html.HiddenFor(model => model.Supervisor)
+        @Html.HiddenFor(model => model.ShopSub)
+        @Html.HiddenFor(model => model.Created)
+        @Html.HiddenFor(model => model.Requested)
+        @Html.HiddenFor(model => model.TargetStart)
+        @Html.HiddenFor(model => model.Priority)
+        @Html.HiddenFor(model => model.Shop)
+        @Html.HiddenFor(model => model.Service)
+        @Html.HiddenFor(model => model.DescriptionToAppend)
+
+
+        <span><strong>WO# @Model.WOnumber</strong></span>
+        <div class="row">
+
+            <div class="leftbox">
+                <div class="editor-label-dll">
+                    @Html.LabelFor(model => model.Service):
+                </div>
+                <div class="editor-field">
+                    @Html.DropDownListFor(x => x.Service, new SelectList(Model.ServiceLists, "Services", "Services", Model.Service), new { Class = "field size3", id = "ddlService" })
+                </div>
+
+            </div>
+            <div class="rightbox">
+                <div class="editor-label-dll">
+                    @Html.LabelFor(model => model.Status):
+                </div>
+                <div class="editor-field">
+                    @Html.DropDownListFor(x => x.Status, new SelectList(Model.GetAvailableStatuses(), "status", "status", Model.Status), new { Class = "field size3", id = "ddlStatus" })
+
+                </div>
+            </div>
+        </div>
+
+        <div class="clearTable"></div>
+
+        <div class="row">
+
+            <div class="leftbox">
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Property):
+                </div>
+
+                <div class="editor-field">
+                    @Html.Encode(Model.Property)
+                </div>
+            </div>
+            <div class="rightbox">
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Asset):
+                </div>
+                <div class="editor-field">
+                    @Html.Encode(Model.Asset)
+                </div>
+                <div class="clearTable"></div>
+            </div>
+        </div>
+
+        <div class="clearTable"></div>
+
+        <div class="row">
+
+            <div class="leftbox">
+                <div class="editor-label">
+                    Location:
+                </div>
+                <div class="editor-field">
+                    @Html.Encode(Model.AssetLocation)
+
+                </div>
+            </div>
+
+
+            <div class="rightbox">
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Type):
+                </div>
+                <div class="editor-field">
+                    @Html.Encode(Model.Type)
+                </div>
+            </div>
+        </div>
+
+        <div class="clearTable"></div>
+        <div class="row">
+
+            <div class="leftbox">
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Shop):
+                </div>
+                <div class="editor-field">
+                    @Html.Encode(Model.Shop)
+                </div>
+            </div>
+            <div class="rightbox">
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Due):
+                </div>
+                <div class="editor-field">
+                    @Html.Encode(Model.Due)
+                </div>
+            </div>
+        </div>
+
+        <div class="clearTable"></div>
+        <div class="row">
+            <div class="leftbox">
+                <div class="editor-label">
+                    Requested By:
+                </div>
+                <div class="editor-field">
+                    @Html.Encode(Model.RequestedBy)
+                </div>
+
+
+            </div>
+            <div class="rightbox">
+                <div class="editor-label">
+                    @Html.LabelFor(model => model.Phone):
+                </div>
+                <div class="editor-field">
+                    @Html.Encode(Model.Phone)
+                </div>
+            </div>
+        </div>
+
+            <div class="clearTable"></div>
+        <div class="row">
+
+            <div class="leftbox">
+                <div class="editor-label">
+                    Account:
+                </div>
+                <div class="editor-field">
+                    @Html.Encode(Model.AccountCharge)
+                </div>
+            </div>
+            <div class="rightmostbox">
+                <div class="editor-label">
+
+                </div>
+                <div class="editor-field">
+
+                </div>
+
+
+            </div>
+
+        </div>
+            <div class="clearTable"></div>
+
+            <div>
+                <div>
+                    <strong style="font-size: 15px; font-weight: bold;"><h3>Description:</h3></strong>
+                </div>
+                <div>
+                    @*@MvcHtmlString.Create(Model.Description)
+                    @Html.DisplayFor(model => model.Description)*@
+                    <pre>
+                    <span id="Description" class="wrapword">
+                        @Html.Encode(MvcHtmlString.Create(Model.Description))
+                        </span>   
+                </pre>
+                <div>
+                    <strong style="font-size: 15px; font-weight: bold;"><h3>Procedure:</h3><h5></h5></strong>
+                </div>
+        <div style="clear:left"></div>
+        @if (Model.Point.Count > 0)
+        {
+            <div id="partial2">
+                @Html.Partial("WOPointParcial", Model.Point)
+            </div>
+
+        }
+            <div>
+                <div>
+                    <strong style="font-size: 15px; font-weight: bold;"><h3> Comments:</h3></strong><h5> (Enter comments then hit button to add comments to work order) </h5>
+                </div>
+                <div>
+                    @Html.TextAreaFor(model => model.SpecialInstruction, new { id = "SpecialInstruction", @class = "adminRichText" })
+
+                </div>
+                <p>
+                    <input name="btnComment" id="btnComment" type="button" value="Add to Comments" />
+                </p>
+            </div>
+
+
+            <div>
+
+                <div style="float:left"><strong style="font-size: 15px; font-weight: bold;"><h3>Labor:</h3><h5><i>(Add time to this work order and add assignment, if required) </i></h5></strong></div>
+		<div style="float:left; padding-left:15px; padding-top:20px">
+                    @Html.ActionLink("Add", "Create", "Labor", new { id = Model.WOnumber }, null)
+                    &nbsp;
+                </div>
+            </div>
+
+            <div style="clear:left"></div>
+            <div id="partial1">
+                @Html.Partial("WOLaborParcial", Model.Laber)
+            </div>
+
+ 
+            <div>
+
+                <div style="float:left"><strong style="font-size: 15px; font-weight: bold;"><h3>Parts:</h3></strong><h5> <i>(Hit the Add button to add parts to this work order, will not display if there are no parts) </i></h5></div>
+		<div style="float:left; padding-left:15px; padding-top:20px">
+                    @Html.ActionLink("Add", "Create", "Part", new { id = Model.WOnumber }, null)
+                    &nbsp;
+                </div>
+            </div>
+
+            <div style="clear:left"></div>
+            @if (Model.part.Count > 0)
+            {
+                <div id="partial2">
+                    @Html.Partial("WOPartParcial", Model.part)
+                </div>
+
+            }
+                <div>
+                    <strong style="font-size: 15px; font-weight: bold;"><h3> Safety precautions:</h3></strong><h5> (If the asset assigned to this work order is energized, the following safety precautions are required.  Check through the 3 options below as precaution.) </h5>
+                </div>
+            <div style="clear:left"></div>
+@if (Model.requireSaftey==true)
+{ 
+if (Model.WOSafety.Count > 0)
+{
+    <div id="partial2">
+        @Html.Partial("WOSaftyParcial", Model.WOSafety)
+    </div>
+
+}
+}
+            @*<div style="clear:left"></div>
+            <p>
+                <input type="submit" value="Save" />
+            </p>*@
+</fieldset>
+}
+
+<script language="javascript" type="text/javascript">
+    jQuery(".adminRichText").ckeditor();
+</script>
