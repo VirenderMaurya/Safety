@@ -472,6 +472,10 @@
         background-color:red;
     }
 
+/*table {
+    padding:0px;
+    border-collapse: collapse;
+}*/
    
 
 
@@ -508,11 +512,74 @@
 
         });
 
+        //globle variable 
+        //var val11 = 0;
+        //val11 = 1;
+        var n = 0;
+        var check=0;
+      $('#tblWOSafety').find('tr').click(function () {  n = ($(this).index() + 1); });//code for find rowid
+
+     
+       
         $('.save-safty').on('click', function () {
+         
+            var tr = $(this).parents('tr:first');// var tr = $(this).parents('tr');
            
-            var tr = $(this).parents('tr:first');
             var answer = tr.find("#chkAnswer").prop('checked');
             var comment = tr.find("#txtComment").val();
+        
+            //code for change color of rows in tblWOSafety table
+            //start
+            if (answer == true) {
+                check = 1;
+            }
+            else if (answer == false) {
+                check = 2;
+            }
+
+
+
+            $('#tblWOSafety tr').bind('click', function (e) {
+             
+                if (check == 1) {
+                    if (n != 0) {
+
+                        if (n % 2 == 0) {
+
+                            $(e.currentTarget).children('td, th').css('background-color', '#ffe2bf');
+
+                            check = 0;
+                            n == 0;
+                          
+                        }
+                        else
+                            if (n % 2 != 0) {
+
+                                $(e.currentTarget).children('td, th').css('background-color', '#FFFFFF');
+                               
+                                check = 0;
+                                n == 0;
+                              
+                            }
+                    }
+
+
+                } else
+                    if (check == 2) {
+
+                       
+                        $(e.currentTarget).children('td, th').css('background-color', '#ff0000');
+                     
+                        check = 0;
+
+                       
+                    }
+                    else {
+                        }
+            });
+
+            //end
+
             var ID = tr.find("#lblID").html();
             var WO = tr.find("#lblWO").html();
             var groupName = tr.find("#lblSafetyGroup").html();
@@ -532,30 +599,58 @@
                 url: $("#hiddenURL").val() + "/updateWOSaftey",
                 data: { "ID": ID, "WO": WO, "GroupName" :groupName,"SafetyName":safetyName, "Answer": answer, "Comment": comment },
                 type: 'POST',
+                
                 cache: false,
                 error: function (xhr, status, error) {
                     alert(error);
                 },
                 success: function (data) {
                     
-                    //if (answer == false)
-                    //{
-                    //    tr.addClass("falsetr");
+                  
+                    if (ID == "0") {
+                        //location.reload(); // commented this line to solve refresh page problem,on clicking save button. 22/11/2016
 
-                    //}
-                    if (ID = "0") {
-                        //tr.find("#lblID").val(data.Value);
-                        location.reload();
+                      
+                        //23/11/2016
+                       // Answer checkbox : if answer is yes value will be checked and 
+                       // if anwer is no value will be unchecked
+                       // start:
+                        tr.find("#lblComment").text(comment);
+                        if (answer == true)
+                        {
+                            tr.find("#lblAnswer").text("Yes");
+                        }
+                        else
+                        {
+                            tr.find("#lblAnswer").text("No");
 
+                          
+                        }
+                     
+                    
+                        //end
+                      
                     }
                     else {
+                        tr.find("#lblComment").text(comment);
+                        if (answer == true) {
+                            tr.find("#lblAnswer").text("Yes");
+                        }
+                        else {
+                            tr.find("#lblAnswer").text("No");
+
+
+                        }
                         tr.find("#lblAnswer").text(answer == true ? "Yes" : item.Answer == false ? "" : "No");
                         tr.find("#lblComment").text(comment);
                     }
+             
                   
                 }
             });
-
+       
+            n = 0;
+       
         });
     })
 </script><div>
@@ -746,7 +841,11 @@
             @if (Model.part.Count > 0)
             {
                 <div id="partial2">
-                    @Html.Partial("WOPartParcial", Model.part.ToList())
+               
+                    <p>@Model.part</p>
+   
+                        @Html.Partial("WOPartParcial", Model.part);
+                 
                 </div>
 
             }

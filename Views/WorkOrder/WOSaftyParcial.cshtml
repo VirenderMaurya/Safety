@@ -25,8 +25,20 @@
           grid.Column("SafetyName", format: @<text>  <span class="display-safty">@item.SafetyName </span> <label id="lblSafetyName" class="edit-safty">@item.SafetyName</label> </text>, style: "col1Width" ),
           grid.Column("Answer", "Answer", format: @<text>  <span class="display-safty"> <label id="lblAnswer">@( item.Answer == 1 ? "Yes" : item.Answer == 2 ? "" : "No")</label> </span>
         @*<select id="selectAnswer" class="edit-safty"><option value="True">Yes</option><option value="False">No</option> </select>*@
+        @* 23/11/2016
+            Answer checkbox : if answer is yes value will be checked and 
+            if anwer is no value will be unchecked
+            start:
+             *@
+           @if(item.Answer==1)
+           { 
+        <input type="checkbox" id="chkAnswer" checked value="@item.Answer" class="edit-safty" />
+           }
+           else { 
+            <input type="checkbox" id="chkAnswer" value="@item.Answer" class="edit-safty" />
+           }
+            @* end *@
 
-        <input type="checkbox" id="chkAnswer" value="@item.Answer" class="edit-safty" />
         <label id="lblchkAnswerComments" class="edit-safty" style=" padding-left: 45px;"> Check the Box to select Yes </label>
         </text> , style: "col2Width"), grid.Column("Comment", "Comment", format: @<text>
                 <span class="display-safty"> <label id="lblComment">@item.Comment</label> </span>    <input type="text" id="txtComment" value="@item.Comment" class="edit-safty" /> </text>, style: "col2Width"),
